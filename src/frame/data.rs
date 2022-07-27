@@ -36,7 +36,7 @@ fn parse_owned_frame_payload<'a: 'f, 'f, 'i: 'a>(
         let mut input = input;
         let mut ret = Vec::with_capacity(field_encodings.len());
 
-        for encoding in field_encodings.iter().copied() {
+        for encoding in field_encodings {
             let (remaining_input, value) = encoding.parse(input)?;
             input = remaining_input;
             match value {
