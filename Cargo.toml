@@ -10,7 +10,7 @@ include = ["/src", "!/src/test-data"]
 
 [dependencies]
 num-traits = "0.2"
-nom = { version = "6", features = ["alloc"] }
+nom = { version = "7", features = ["alloc"] }
 itertools = "0.10"
 integer-encoding = "3"
 chrono = "0.4"
@@ -19,6 +19,6 @@ thiserror = "1"
 
 [dev-dependencies]
 anyhow = "1"
-insta = { version = "1.12", features = ["glob"] }
+insta = { version = "1.19", features = ["glob", "yaml"] }
 serde = { version = "1", features = ["derive"] }
-serde-big-array = { version = "0.3", features = ["const-generics"] }
+serde-big-array = "0.4"

@@ -406,7 +406,7 @@ impl<I> From<nom::error::Error<I>> for ParseHeadersError<I> {
 pub fn parse_headers(input: &[u8]) -> IResult<&[u8], Header, ParseHeadersError<&[u8]>> {
     let (input, header) = fold_many0(
         parse_header,
-        HeaderBuilder::default(),
+        HeaderBuilder::default,
         |mut header, header_frame| {
             match header_frame {
                 Frame::Product(product) => header.product = Some(product.to_owned()),

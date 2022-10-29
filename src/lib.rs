@@ -22,7 +22,7 @@ pub enum BlackboxRecord<'a> {
     Garbage(usize),
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq)]
 pub enum Strictness {
     Strict,
     Lenient,
@@ -109,6 +109,20 @@ impl<'a> BlackboxReader<'a> {
         loop {
             match parse_next_frame(&self.header, self.remaining_bytes) {
                 Ok((remaining_bytes, frame)) => {
+                    if self.strictness == Strictness::Lenient {
+                        match remaining_bytes.first() {
+                            Some(b'I') | Some(b'P') | Some(b'S') | Some(b'G') | Some(b'H') | Some(b'E') | None => {
+                                // Next frame looks valid or it's an EOF
+                            }
+                            _ => {
+                                // Skip the parsed frame
+                                // Continue from the second byte of the parsed frame, because if it's invalid,
+                                // we can't be sure what size it was and where next frame starts
+                                self.remaining_bytes = &self.remaining_bytes[1..];
+                                continue;
+                            }
+                        }
+                    }
                     self.remaining_bytes = remaining_bytes;
                     if let Some(record) = self.processor.process_frame(frame) {
                         return Some(match record {
@@ -138,9 +152,14 @@ impl<'a> BlackboxReader<'a> {
                             }
                         }
                     },
-                    nom::Err::Failure(_) => {
-                        return None;
-                    }
+                    nom::Err::Failure(e) => match self.strictness {
+                        Strictness::Strict => return None,
+                        Strictness::Lenient => {
+                            if !e.input.is_empty() {
+                                self.remaining_bytes = &e.input[1..];
+                            }
+                        }
+                    },
                     nom::Err::Incomplete(_) => {
                         return None;
                     }
